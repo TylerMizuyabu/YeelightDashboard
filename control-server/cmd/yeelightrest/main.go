@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer packetConn.Close()
 	socket := packetConn.(*net.UDPConn)
 	_, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr)
 	socket.SetReadDeadline(time.Now().Add(timeout))
@@ -37,22 +38,6 @@ func main() {
 		return
 	}
 	fmt.Println(rsBuf[0:size])
-	// var err error
-
-	// ssdp, _ := net.ResolveUDPAddr("udp4", address)
-	// c, _ := net.ListenPacket("udp4", ":0")
-	// socket := c.(*net.UDPConn)
-	// socket.WriteToUDP([]byte(discoverCommand), ssdp)
-	// socket.SetReadDeadline(time.Now().Add(timeout))
-
-	// rsBuf := make([]byte, 1024)
-	// size, _, err := socket.ReadFromUDP(rsBuf)
-	// if err != nil {
-	// 	fmt.Println("no devices found")
-	// }
-	// rs := rsBuf[0:size]
-	// addr := parseAddr(string(rs))
-	// fmt.Printf("Device with ip %s found\n", addr)
 }
 
 //parseAddr parses address from ssdp response
