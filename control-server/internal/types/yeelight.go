@@ -31,16 +31,7 @@ const (
 	BsLamp             = "bslamp"
 )
 
-type LightMode uint8
-
-const (
-	ColorMode            LightMode = 1
-	ColorTemperatureMode           = 2
-	HSVMode                        = 3
-)
-
 func NewYeelight(responseMessage string) (*Yeelight, error) {
-	fmt.Println(responseMessage)
 	parser := NewParser(responseMessage)
 	errs := make([]error, 0)
 	y := new(Yeelight)

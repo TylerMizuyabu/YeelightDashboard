@@ -1,7 +1,10 @@
 package management
 
 import (
+	"bufio"
 	"fmt"
+	"net"
+	"time"
 	"yeelight-control-server/internal/types"
 )
 
@@ -25,3 +28,20 @@ func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
 	}
 }
 
+func (ym *YeelightManager) WatchLight(ipAddr string) {
+	conn, err := net.DialTimeout("tcp", ipAddr, time.Second*3)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+	r := bufio.NewReader(conn)
+	for {
+		data, err := r.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error: ", err.Error())
+			continue
+		}
+		fmt.Println("Data: ", data)
+
+	}
+}
