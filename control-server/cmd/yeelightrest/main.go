@@ -2,7 +2,7 @@ package main
 
 import (
 	"yeelight-control-server/internal/discovery"
-	"fmt"
+	"yeelight-control-server/internal/management"
 )
 
 func main() {
@@ -19,11 +19,12 @@ func main() {
 	// 		fmt.Println("Data: ", data)
 	// 	}
 	// }
-	
-	discoverService := discovery.DiscoveryService{}
-	c := discoverService.Start()
-	for light := range c {
-		fmt.Println(light)
-	}
 
+	discoverService := discovery.NewDiscoveryService()
+	lightManager := management.NewYeelightManager()
+	lightManager.Start(discoverService.Start())
+
+	for {
+		select {}
+	}
 }

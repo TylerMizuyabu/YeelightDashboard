@@ -11,8 +11,16 @@ var discoverCommand = "M-SEARCH * HTTP/1.1\r\n HOST:239.255.255.250:1982\r\n MAN
 var address = "239.255.255.250:1982"
 var timeout = time.Second * 3
 var pollingInterval = time.Second * 1
+var maxPollingInterval = time.Minute
 
 type DiscoveryService struct {
+	failures int
+}
+
+func NewDiscoveryService() *DiscoveryService {
+	return &DiscoveryService{
+		failures: 0,
+	}
 }
 
 func (ds *DiscoveryService) Start() chan *types.Yeelight {
@@ -33,23 +41,39 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 	}
 	socket := packetConn.(*net.UDPConn)
 	socket.SetReadDeadline(time.Now().Add(timeout))
-	_, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr)
-	if err != nil {
-		panic(err)
-	}
+
 	for {
+		_, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr)
+		if err != nil {
+			fmt.Println("Error attempting to send discovery request")
+			ds.handleFailure()
+			continue
+		}
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
-			// fmt.Println("no devices found")
+			fmt.Println("no devices found")
+			ds.handleFailure()
+			continue
 		} else if size > 0 {
 			y, err := types.NewYeelight(string(rsBuf[0:size]))
 			if err != nil {
 				fmt.Println("Error occurred attempting to decode response")
+				ds.handleFailure()
 				continue
 			}
 			c <- y
 		}
-		time.Sleep(pollingInterval)
+		ds.failures = 0
+	}
+}
+
+func (ds *DiscoveryService) handleFailure() {
+	ds.failures++
+	sleepDuration := pollingInterval * time.Duration(ds.failures)
+	if sleepDuration < maxPollingInterval {
+		time.Sleep(sleepDuration)
+	} else {
+		time.Sleep(maxPollingInterval)
 	}
 }
