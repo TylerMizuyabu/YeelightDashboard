@@ -45,8 +45,8 @@ func NewYeelight(responseMessage string) (*Yeelight, error) {
 	errs := make([]error, 0)
 	y := new(Yeelight)
 	handleParserError(parser.ParseAddr(&y.addr), &errs)
-	handleParserError(parser.ParseHeader("ID", false, &y.Id), &errs)
-	handleParserError(parser.ParseHeader("Name", true, &y.Name), &errs)
+	handleParserError(parser.ParseHeader("id", false, &y.Id), &errs)
+	handleParserError(parser.ParseHeader("name", true, &y.Name), &errs)
 	if len(errs) > 0 {
 		logParserErrors(&errs)
 		return nil, ErrorInvalidResponseMessage

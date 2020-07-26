@@ -47,7 +47,7 @@ func (rp *ResponseParser) ParseHeader(header string, emptyAllowed bool, s *strin
 	}
 	defer resp.Body.Close()
 	*s = resp.Header.Get(header)
-	if *s == "" && emptyAllowed {
+	if *s == "" && !emptyAllowed {
 		return ErrorNoMatchingHeader
 	}
 	return nil

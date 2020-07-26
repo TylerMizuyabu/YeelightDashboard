@@ -41,9 +41,11 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 	}
 	socket := packetConn.(*net.UDPConn)
 	socket.SetReadDeadline(time.Now().Add(timeout))
-
+	// According to the yeelight spec there should be an advertisement request sent out
+	// every hour, or when a new light joins the network. I don't know how much I believe it
+	// though
+	_, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr)
 	for {
-		_, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr)
 		if err != nil {
 			fmt.Println("Error attempting to send discovery request")
 			ds.handleFailure()

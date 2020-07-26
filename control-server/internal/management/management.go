@@ -17,9 +17,11 @@ func NewYeelightManager() *YeelightManager {
 
 func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
 	for light := range discoveredLights {
-		if _, ok := ym.lights[light.Id]; ok {
+		fmt.Println(light)
+		if _, ok := ym.lights[light.Id]; !ok {
 			fmt.Println("Adding received light", light)
 			ym.lights[light.Id] = light
 		}
 	}
 }
+
