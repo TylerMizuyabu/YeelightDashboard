@@ -31,7 +31,7 @@ func NewParser(msg string) *ResponseParser {
 // ParseAddr function parses the ip address part of the string value under the LOCATION header and stores it in provided string
 func (rp *ResponseParser) ParseAddr(a *string) error {
 	var addr string
-	err := rp.ParseHeader("LOCATION", &addr)
+	err := rp.ParseHeader("LOCATION", false, &addr)
 	if err != nil {
 		return err
 	}
@@ -40,14 +40,14 @@ func (rp *ResponseParser) ParseAddr(a *string) error {
 }
 
 // ParseHeader function reads the response and sets the value of the provided string pointer to the header value that corresponds with the provided header key
-func (rp *ResponseParser) ParseHeader(header string, s *string) error {
+func (rp *ResponseParser) ParseHeader(header string, emptyAllowed bool, s *string) error {
 	resp, err := http.ReadResponse(bufio.NewReader(strings.NewReader(rp.msg)), nil)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	*s = resp.Header.Get(header)
-	if *s == "" {
+	if *s == "" && emptyAllowed {
 		return ErrorNoMatchingHeader
 	}
 	return nil
