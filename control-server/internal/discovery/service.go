@@ -10,6 +10,7 @@ import (
 var discoverCommand = "M-SEARCH * HTTP/1.1\r\n HOST:239.255.255.250:1982\r\n MAN:\"ssdp:discover\"\r\n ST:wifi_bulb\r\n"
 var address = "239.255.255.250:1982"
 var timeout = time.Second * 3
+var pollingInterval = time.Second * 1
 
 type DiscoveryService struct {
 }
@@ -30,7 +31,6 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 	if err != nil {
 		panic(err)
 	}
-	defer packetConn.Close()
 	socket := packetConn.(*net.UDPConn)
 	socket.SetReadDeadline(time.Now().Add(timeout))
 	_, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr)
@@ -41,7 +41,7 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
-			fmt.Println("no devices found")
+			// fmt.Println("no devices found")
 		} else if size > 0 {
 			y, err := types.NewYeelight(string(rsBuf[0:size]))
 			if err != nil {
@@ -50,5 +50,6 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 			}
 			c <- y
 		}
+		time.Sleep(pollingInterval)
 	}
 }
