@@ -1,7 +1,7 @@
 package types
 
 type Command struct {
-	id int
+	id     int
 	method string
 	params []string
 }

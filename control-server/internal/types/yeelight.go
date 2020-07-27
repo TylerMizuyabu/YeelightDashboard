@@ -6,19 +6,22 @@ import (
 )
 
 var ErrorInvalidResponseMessage error = errors.New("Invalid Response Message")
+var ErrorUnableToParseNotificationMessage error = errors.New("Unable To Parse Yeelight Notification Message")
 
 type Yeelight struct {
-	addr       string
-	Id         string
-	Model      LightModel
-	IsOn       bool
-	Brightness uint8
-	Mode       LightMode
-	Ct         uint64
-	Rgb        uint64
-	Hue        uint16
-	Sat        uint8
-	Name       string
+	addr           string
+	Id             string
+	Model          LightModel
+	IsOn           bool
+	Brightness     uint8
+	Mode           LightMode
+	Ct             uint64
+	Rgb            uint64
+	Hue            uint16
+	Sat            uint8
+	Name           string
+	Flowing        FlowMode
+	FlowParameters FlowParams
 }
 
 type LightModel string
@@ -31,7 +34,7 @@ const (
 	BsLamp             = "bslamp"
 )
 
-func NewYeelight(responseMessage string) (*Yeelight, error) {
+func NewYeelightFromDiscoveryResponse(responseMessage string) (*Yeelight, error) {
 	parser := NewParser(responseMessage)
 	errs := make([]error, 0)
 	y := new(Yeelight)
@@ -39,10 +42,14 @@ func NewYeelight(responseMessage string) (*Yeelight, error) {
 	handleParserError(parser.ParseHeader("id", false, &y.Id), &errs)
 	handleParserError(parser.ParseHeader("name", true, &y.Name), &errs)
 	if len(errs) > 0 {
-		logParserErrors(&errs)
+		logErrors(&errs)
 		return nil, ErrorInvalidResponseMessage
 	}
 	return y, nil
+}
+
+func (y *Yeelight) GetAddress() string {
+	return y.addr
 }
 
 func handleParserError(err error, errs *[]error) {
@@ -51,7 +58,7 @@ func handleParserError(err error, errs *[]error) {
 	}
 }
 
-func logParserErrors(errs *[]error) {
+func logErrors(errs *[]error) {
 	fmt.Println("The following errors occurred while parsing the response message:")
 	for _, err := range *errs {
 		fmt.Println("\t", err.Error())

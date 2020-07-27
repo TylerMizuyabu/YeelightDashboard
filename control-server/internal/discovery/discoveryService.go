@@ -58,7 +58,7 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 			ds.handleFailure()
 			continue
 		} else if size > 0 {
-			y, err := types.NewYeelight(string(rsBuf[0:size]))
+			y, err := types.NewYeelightFromDiscoveryResponse(string(rsBuf[0:size]))
 			if err != nil {
 				fmt.Println("Error occurred attempting to decode response")
 				ds.handleFailure()
