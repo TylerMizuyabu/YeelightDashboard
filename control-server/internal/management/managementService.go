@@ -52,6 +52,7 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 			fmt.Println("Error unmarshaling data", err.Error())
 		}
 		ym.UpdateLight(ym.lights[id], nr.Params)
+		fmt.Println(ym.lights[id])
 	}
 }
 

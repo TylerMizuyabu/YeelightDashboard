@@ -54,7 +54,6 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
-			fmt.Println("no devices found")
 			ds.handleFailure()
 			continue
 		} else if size > 0 {
