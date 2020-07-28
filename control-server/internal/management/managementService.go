@@ -10,7 +10,6 @@ import (
 	"time"
 	"yeelight-control-server/internal/types"
 
-	"github.com/google/uuid"
 )
 
 type YeelightManager struct {
@@ -68,24 +67,23 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 }
 
 func (ym *YeelightManager) RunCommand(command *types.Command, lightIds []string) string {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		fmt.Println("failed to generate uuid")
-		return ""
-	}
-	command.SetId(id.String())
-
+	id := 1
+	command.SetId(id)
+	fmt.Println(lightIds)
 	for _, id := range lightIds {
 		if conn, has := ym.lightConns[id]; has {
 			if payload, err := json.Marshal(*command); err != nil {
 				fmt.Println("Error occurred attempting to parse command json ", command)
 			} else {
+				payload = append(payload, '\r','\n')
+				fmt.Println(string(payload))
+				fmt.Println(conn)
 				conn.Write(payload)
 			}
 		}
 	}
 
-	return id.String()
+	return fmt.Sprintf("%d", id)
 }
 
 // All of the code bellow should be refactored at some point

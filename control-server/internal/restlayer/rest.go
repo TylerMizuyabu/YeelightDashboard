@@ -19,7 +19,7 @@ func NewLightHandler(lm *management.YeelightManager) *LightHandler {
 
 func (lm *LightHandler) TurnOffLight(c *gin.Context) {
 	lights := make([]string, 0)
-	if err := c.BindQuery(&lights); err != nil {
+	if err := c.Bind(&lights); err != nil {
 		c.String(400, "Missing lights query param")
 	}
 	cmd := management.NewSetPowerCommand(false, true, 1000, &types.DefaultLightMode)

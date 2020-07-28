@@ -16,23 +16,23 @@ var minBrightness int = 1
 var maxBrightness int = 100
 
 func NewGetPropsCommand(props ...string) *types.Command {
-	return types.NewCommand("", "get_prop", []interface{}{props})
+	return types.NewCommand(0, "get_prop", []interface{}{props})
 }
 
 func NewSetCtAbxCommand(temp int, smooth bool, duration int) *types.Command {
-	return types.NewCommand("", "set_ct_abx", []interface{}{withinRange(temp, &minTemp, &maxTemp), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
+	return types.NewCommand(0, "set_ct_abx", []interface{}{withinRange(temp, &minTemp, &maxTemp), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
 func NewSetRgbCommand(rgb int, smooth bool, duration int) *types.Command {
-	return types.NewCommand("", "set_rgb", []interface{}{withinRange(rgb, &minRgb, &maxRgb), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
+	return types.NewCommand(0, "set_rgb", []interface{}{withinRange(rgb, &minRgb, &maxRgb), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
 func NewSetHsvCommand(hue int, sat int, smooth bool, duration int) *types.Command {
-	return types.NewCommand("", "set_hsv", []interface{}{withinRange(hue, &minHue, &maxHue), sat, smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
+	return types.NewCommand(0, "set_hsv", []interface{}{withinRange(hue, &minHue, &maxHue), sat, smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
 func NewSetBrightnessCommand(brightness int, smooth bool, duration int) *types.Command {
-	return types.NewCommand("", "set_hsv", []interface{}{withinRange(brightness, &minBrightness, &maxBrightness), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
+	return types.NewCommand(0, "set_hsv", []interface{}{withinRange(brightness, &minBrightness, &maxBrightness), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
 func NewSetPowerCommand(on bool, smooth bool, duration int, mode *types.LightMode) *types.Command {
@@ -40,19 +40,19 @@ func NewSetPowerCommand(on bool, smooth bool, duration int, mode *types.LightMod
 		mode = new(types.LightMode)
 		*mode = types.DefaultLightMode
 	}
-	return types.NewCommand("", "set_power", []interface{}{onOrOff(on), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil), mode})
+	return types.NewCommand(0, "set_power", []interface{}{onOrOff(on), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil), mode})
 }
 
 func NewSetDefaultCommand() *types.Command {
-	return types.NewCommand("", "set_default", []interface{}{})
+	return types.NewCommand(0, "set_default", []interface{}{})
 }
 
 func NewStartColorFlowCommand(params types.FlowParams) *types.Command {
-	return types.NewCommand("", "start_cf", []interface{}{params.Count, params.Action, flowTupleSliceToString(&params.Tuples)})
+	return types.NewCommand(0, "start_cf", []interface{}{params.Count, params.Action, flowTupleSliceToString(&params.Tuples)})
 }
 
 func NewStopColorFlowCommand() *types.Command {
-	return types.NewCommand("", "stop_cf", []interface{}{})
+	return types.NewCommand(0, "stop_cf", []interface{}{})
 }
 
 func smoothOrSudden(isSmooth bool) string {
@@ -71,9 +71,9 @@ func onOrOff(isOn bool) string {
 }
 
 func withinRange(value int, min *int, max *int) int {
-	if value < *min && min != nil {
+	if min != nil && value < *min {
 		return *min
-	} else if value > *max && max != nil {
+	} else if  max != nil && value > *max {
 		return *max
 	} else {
 		return value

@@ -11,10 +11,10 @@ import (
 func main() {
 	discoverService := discovery.NewDiscoveryService()
 	lightManager := management.NewYeelightManager()
-	lightManager.Start(discoverService.Start())
+	go lightManager.Start(discoverService.Start())
 
 	lightHandler := restlayer.NewLightHandler(lightManager)
 	route := gin.Default()
 	route.PUT("/lights", lightHandler.TurnOffLight)
-	route.Run()
+	route.Run(":8000")
 }
