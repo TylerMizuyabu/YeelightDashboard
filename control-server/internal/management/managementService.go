@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 	"yeelight-control-server/internal/types"
-
 )
 
 type YeelightManager struct {
@@ -26,7 +25,6 @@ func NewYeelightManager() *YeelightManager {
 
 func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
 	for light := range discoveredLights {
-		fmt.Println(light)
 		if _, ok := ym.lights[light.Id]; !ok {
 			fmt.Println("Adding received light", light)
 			ym.lights[light.Id] = light
@@ -49,7 +47,6 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 			fmt.Println("Error: ", err.Error())
 			continue
 		}
-		fmt.Println("Data: ", data)
 		var message interface{}
 		err = json.Unmarshal([]byte(data), &message)
 		if err != nil {
@@ -69,15 +66,13 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 func (ym *YeelightManager) RunCommand(command *types.Command, lightIds []string) string {
 	id := 1
 	command.SetId(id)
-	fmt.Println(lightIds)
 	for _, id := range lightIds {
 		if conn, has := ym.lightConns[id]; has {
 			if payload, err := json.Marshal(*command); err != nil {
 				fmt.Println("Error occurred attempting to parse command json ", command)
 			} else {
-				payload = append(payload, '\r','\n')
-				fmt.Println(string(payload))
-				fmt.Println(conn)
+				payload = append(payload, '\r', '\n')
+				fmt.Println("Executing command: ", string(payload))
 				conn.Write(payload)
 			}
 		}
