@@ -13,12 +13,12 @@ type Yeelight struct {
 	Id             string
 	Model          LightModel
 	IsOn           bool
-	Brightness     uint8
+	Brightness     int
 	Mode           LightMode
-	Ct             uint64
-	Rgb            uint64
-	Hue            uint16
-	Sat            uint8
+	Ct             int
+	Rgb            int
+	Hue            int
+	Sat            int
 	Name           string
 	Flowing        FlowMode
 	FlowParameters FlowParams

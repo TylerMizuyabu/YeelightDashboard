@@ -1,9 +1,14 @@
 package types
 
-// Need to look more into the actual return value of this
+type CommandSuccessResponse struct {
+	Id     int           `json:"id"`
+	Result []interface{} `json:"result"`
+}
 
-type CommandResponse struct {
-	id     int
-	result []string
-	error  map[string]interface{}
+type CommandErrorResponse struct {
+	Id    int `json:"id"`
+	Error struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error"`
 }

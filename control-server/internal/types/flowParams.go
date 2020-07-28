@@ -3,22 +3,22 @@ package types
 import "fmt"
 
 type FlowParams struct {
-	Count  uint8
+	Count  uint
 	Action FlowAction
 	Tuples []FlowTuple
 }
 
 type FlowTuple struct {
-	Duration   uint64
-	Mode       uint8
-	Value      uint64
-	Brightness int8
+	Duration   int
+	Mode       int
+	Value      int
+	Brightness int
 }
 
-type FlowAction uint8
+type FlowAction int
 
 const (
-	RecoverToPreviousState FlowAction = iota
+	RecoverToPreviousState int = iota
 	KeepCurrentState
 	TurnOff
 )
