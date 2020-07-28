@@ -20,7 +20,8 @@ type YeelightManager struct {
 
 func NewYeelightManager() *YeelightManager {
 	return &YeelightManager{
-		lights: make(map[string]*types.Yeelight, 0),
+		lights:     make(map[string]*types.Yeelight, 0),
+		lightConns: make(map[string]net.Conn, 0),
 	}
 }
 
