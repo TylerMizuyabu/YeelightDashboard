@@ -7,12 +7,12 @@ type NotificationResponse struct {
 
 type NotificationResponseParams struct {
 	Power          *string    `json:"power,omitempty"`
-	Brightness     *uint8     `json:"bright,omitempty"`
+	Brightness     *int       `json:"bright,omitempty"`
 	Mode           *LightMode `json:"color_mode,omitempty"`
-	Ct             *uint64    `json:"ct,omitempty"`
-	Rgb            *uint64    `json:"rgb,omitempty"`
-	Hue            *uint16    `json:"hue,omitempty"`
-	Sat            *uint8     `json:"sat,omitempty"`
+	Ct             *int       `json:"ct,omitempty"`
+	Rgb            *int       `json:"rgb,omitempty"`
+	Hue            *int       `json:"hue,omitempty"`
+	Sat            *int       `json:"sat,omitempty"`
 	Name           *string    `json:"name,omitempty"`
 	Flowing        *FlowMode  `json:"flowing,omitempty"`
 	FlowParameters *string    `json:"flow_params,omitempty"`
