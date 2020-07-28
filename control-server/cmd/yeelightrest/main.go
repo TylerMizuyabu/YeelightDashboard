@@ -16,4 +16,5 @@ func main() {
 	lightHandler := restlayer.NewLightHandler(lightManager)
 	route := gin.Default()
 	route.PUT("/lights", lightHandler.TurnOffLight)
+	route.Run()
 }
