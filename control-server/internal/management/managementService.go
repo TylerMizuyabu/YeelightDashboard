@@ -9,10 +9,13 @@ import (
 	"strings"
 	"time"
 	"yeelight-control-server/internal/types"
+
+	"github.com/google/uuid"
 )
 
 type YeelightManager struct {
-	lights map[string]*types.Yeelight
+	lights     map[string]*types.Yeelight
+	lightConns map[string]net.Conn
 }
 
 func NewYeelightManager() *YeelightManager {
@@ -38,6 +41,7 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 		panic(err)
 	}
 	defer conn.Close()
+	ym.lightConns[id] = conn
 	r := bufio.NewReader(conn)
 	for {
 		data, err := r.ReadString('\n')
@@ -57,14 +61,35 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 		case types.CommandErrorResponse:
 			fmt.Println("Command error: ", result.Error.Message)
 		case types.NotificationResponse:
-			ym.UpdateLight(ym.lights[id], result.Params)
+			ym.UpdateLightRecord(ym.lights[id], result.Params)
 		}
 	}
 }
 
+func (ym *YeelightManager) RunCommand(command *types.Command, lightIds []string) string {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		fmt.Println("failed to generate uuid")
+		return ""
+	}
+	command.SetId(id.String())
+
+	for _, id := range lightIds {
+		if conn, has := ym.lightConns[id]; has {
+			if payload, err := json.Marshal(*command); err != nil {
+				fmt.Println("Error occurred attempting to parse command json ", command)
+			} else {
+				conn.Write(payload)
+			}
+		}
+	}
+
+	return id.String()
+}
+
 // All of the code bellow should be refactored at some point
 
-func (ym *YeelightManager) UpdateLight(y *types.Yeelight, params types.NotificationResponseParams) {
+func (ym *YeelightManager) UpdateLightRecord(y *types.Yeelight, params types.NotificationResponseParams) {
 	// Uuuuuh I'm not sure how to do this better but will have to look into it -_-
 	ifIntNotNilSetField(&y.Brightness, params.Brightness)
 	ifIntNotNilSetField(&y.Ct, params.Ct)

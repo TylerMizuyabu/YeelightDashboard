@@ -15,27 +15,27 @@ var maxTemp int = 6500
 var minBrightness int = 1
 var maxBrightness int = 100
 
-func newGetPropsCommand(props ...string) *types.Command {
+func NewGetPropsCommand(props ...string) *types.Command {
 	return types.NewCommand("", "get_prop", []interface{}{props})
 }
 
-func newSetCtAbxCommand(temp int, smooth bool, duration int) *types.Command {
+func NewSetCtAbxCommand(temp int, smooth bool, duration int) *types.Command {
 	return types.NewCommand("", "set_ct_abx", []interface{}{withinRange(temp, &minTemp, &maxTemp), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
-func newSetRgbCommand(rgb int, smooth bool, duration int) *types.Command {
+func NewSetRgbCommand(rgb int, smooth bool, duration int) *types.Command {
 	return types.NewCommand("", "set_rgb", []interface{}{withinRange(rgb, &minRgb, &maxRgb), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
-func newSetHsvCommand(hue int, sat int, smooth bool, duration int) *types.Command {
+func NewSetHsvCommand(hue int, sat int, smooth bool, duration int) *types.Command {
 	return types.NewCommand("", "set_hsv", []interface{}{withinRange(hue, &minHue, &maxHue), sat, smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
-func newSetBrightnessCommand(brightness int, smooth bool, duration int) *types.Command {
+func NewSetBrightnessCommand(brightness int, smooth bool, duration int) *types.Command {
 	return types.NewCommand("", "set_hsv", []interface{}{withinRange(brightness, &minBrightness, &maxBrightness), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
-func newSetPowerCommand(on bool, smooth bool, duration int, mode *types.LightMode) *types.Command {
+func NewSetPowerCommand(on bool, smooth bool, duration int, mode *types.LightMode) *types.Command {
 	if mode == nil {
 		mode = new(types.LightMode)
 		*mode = types.DefaultLightMode
@@ -43,15 +43,15 @@ func newSetPowerCommand(on bool, smooth bool, duration int, mode *types.LightMod
 	return types.NewCommand("", "set_power", []interface{}{onOrOff(on), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil), mode})
 }
 
-func newSetDefaultCommand() *types.Command {
+func NewSetDefaultCommand() *types.Command {
 	return types.NewCommand("", "set_default", []interface{}{})
 }
 
-func newStartColorFlowCommand(params types.FlowParams) *types.Command {
+func NewStartColorFlowCommand(params types.FlowParams) *types.Command {
 	return types.NewCommand("", "start_cf", []interface{}{params.Count, params.Action, flowTupleSliceToString(&params.Tuples)})
 }
 
-func newStopColorFlowCommand() *types.Command {
+func NewStopColorFlowCommand() *types.Command {
 	return types.NewCommand("", "stop_cf", []interface{}{})
 }
 

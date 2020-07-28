@@ -2,11 +2,11 @@ package types
 
 type LightMode uint8
 
-const (
-	DefaultLightMode LightMode = iota
-	ColorMode
-	ColorTemperatureMode
-	HSVMode
-	ColorFlowMode
-	NightLightMode
+var (
+	DefaultLightMode     LightMode = 0
+	ColorMode                      = 1
+	ColorTemperatureMode           = 2
+	HSVMode                        = 3
+	ColorFlowMode                  = 4
+	NightLightMode                 = 5
 )
