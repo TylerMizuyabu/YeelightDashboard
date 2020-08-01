@@ -2,27 +2,21 @@ package restlayer
 
 import (
 	"yeelight-control-server/internal/management"
-	"yeelight-control-server/internal/types"
 
 	"github.com/gin-gonic/gin"
 )
 
-type LightHandler struct {
-	lm *management.YeelightManager
+type LightManagementRest struct {
+	lightHandler *LightHandler
 }
 
-func NewLightHandler(lm *management.YeelightManager) *LightHandler {
-	return &LightHandler{
-		lm: lm,
+func NewLightManagementRest(lm *management.YeelightManager) *LightManagementRest {
+	return &LightManagementRest{
+		lightHandler: NewLightHandler(lm),
 	}
 }
 
-func (lm *LightHandler) TurnOffLight(c *gin.Context) {
-	lights := make([]string, 0)
-	if err := c.Bind(&lights); err != nil {
-		c.String(400, "Missing lights query param")
-	}
-	cmd := management.NewSetPowerCommand(false, true, 1000, &types.DefaultLightMode)
-	id := lm.lm.RunCommand(cmd, lights)
-	c.String(200, id)
+func (r *LightManagementRest) Run(g *gin.Engine, addr string) {
+	r.lightHandler.RegisterEndpoints(g)
+	g.Run(addr)
 }

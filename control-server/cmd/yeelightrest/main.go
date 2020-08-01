@@ -13,8 +13,8 @@ func main() {
 	lightManager := management.NewYeelightManager()
 	go lightManager.Start(discoverService.Start())
 
-	lightHandler := restlayer.NewLightHandler(lightManager)
+	managementRest := restlayer.NewLightManagementRest(lightManager)
 	route := gin.Default()
-	route.PUT("/lights", lightHandler.TurnOffLight)
-	route.Run(":8000")
+
+	managementRest.Run(route, ":8000")
 }
