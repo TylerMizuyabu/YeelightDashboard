@@ -7,9 +7,13 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"yeelight-control-server/internal/types"
 )
+
+var lightsMutex = &sync.Mutex{}
+var lightConnsMutex = &sync.Mutex{}
 
 type YeelightManager struct {
 	lights     map[string]*types.Yeelight
@@ -25,9 +29,8 @@ func NewYeelightManager() *YeelightManager {
 
 func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
 	for light := range discoveredLights {
-		if _, ok := ym.lights[light.Id]; !ok {
-			fmt.Println("Adding received light", light)
-			ym.lights[light.Id] = light
+		if _, ok := ym.getLight(light.Id); !ok {
+			ym.addLight(light)
 			go ym.MonitorLight(light.GetAddress(), light.Id)
 		}
 	}
@@ -39,7 +42,7 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 		panic(err)
 	}
 	defer conn.Close()
-	ym.lightConns[id] = conn
+	ym.addLightConn(id, conn)
 	r := bufio.NewReader(conn)
 	for {
 		data, err := r.ReadString('\n')
@@ -67,7 +70,7 @@ func (ym *YeelightManager) RunCommand(command *types.Command, lightIds []string)
 	id := 1
 	command.SetId(id)
 	for _, id := range lightIds {
-		if conn, has := ym.lightConns[id]; has {
+		if conn, has := ym.getLightConn(id); has {
 			if payload, err := json.Marshal(*command); err != nil {
 				fmt.Println("Error occurred attempting to parse command json ", command)
 			} else {
@@ -114,6 +117,32 @@ func (ym *YeelightManager) UpdateLightRecord(y *types.Yeelight, params types.Not
 			y.FlowParameters = *flowParams
 		}
 	}
+}
+
+func (ym *YeelightManager) addLight(light *types.Yeelight) {
+	lightsMutex.Lock()
+	ym.lights[light.Id] = light
+	lightsMutex.Unlock()
+}
+
+func (ym *YeelightManager) getLight(id string) (*types.Yeelight, bool) {
+	lightsMutex.Lock()
+	light, exists := ym.lights[id]
+	lightsMutex.Unlock()
+	return light, exists
+}
+
+func (ym *YeelightManager) addLightConn(id string, conn net.Conn) {
+	lightConnsMutex.Lock()
+	ym.lightConns[id] = conn
+	lightConnsMutex.Unlock()
+}
+
+func (ym *YeelightManager) getLightConn(id string) (net.Conn, bool) {
+	lightConnsMutex.Lock()
+	conn, exists := ym.lightConns[id]
+	lightConnsMutex.Unlock()
+	return conn, exists
 }
 
 // I want generics T_T
