@@ -32,7 +32,7 @@ func NewSetHsvCommand(hue int, sat int, smooth bool, duration int) *types.Comman
 }
 
 func NewSetBrightnessCommand(brightness int, smooth bool, duration int) *types.Command {
-	return types.NewCommand(0, "set_hsv", []interface{}{withinRange(brightness, &minBrightness, &maxBrightness), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
+	return types.NewCommand(0, "set_bright", []interface{}{withinRange(brightness, &minBrightness, &maxBrightness), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
 func NewSetPowerCommand(on bool, smooth bool, duration int, mode *types.LightMode) *types.Command {

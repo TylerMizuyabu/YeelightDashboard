@@ -2,5 +2,5 @@ package requests
 
 type SetBrightnessRequest struct {
 	*BaseTransitionRequest
-	Brightness int `json:"brigtness"`
+	Brightness int `json:"brightness"`
 }
