@@ -18,25 +18,26 @@ var lightConnsMutex = &sync.Mutex{}
 type YeelightManager struct {
 	lights     map[string]*types.Yeelight
 	lightConns map[string]net.Conn
+	broadcast chan []byte
 }
 
-func NewYeelightManager() *YeelightManager {
+func NewYeelightManager(broadcast chan[]byte) *YeelightManager {
 	return &YeelightManager{
 		lights:     make(map[string]*types.Yeelight, 0),
 		lightConns: make(map[string]net.Conn, 0),
+		broadcast: broadcast,
 	}
 }
 
-func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight, broadCastChannel chan []byte) {
+func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
 	for light := range discoveredLights {
-		if _, ok := ym.getLight(light.Id); !ok {
-			ym.addLight(light)
-			go ym.MonitorLight(light.GetAddress(), light.Id, broadCastChannel)
+		if ok := ym.AddLight(light); !ok {
+			go ym.MonitorLight(light.GetAddress(), light.Id)
 		}
 	}
 }
 
-func (ym *YeelightManager) MonitorLight(ipAddr string, id string, broadCastChannel chan []byte) {
+func (ym *YeelightManager) MonitorLight(ipAddr string, id string, ) {
 	conn, err := net.DialTimeout("tcp", ipAddr, time.Second*3)
 	if err != nil {
 		panic(err)
@@ -67,7 +68,7 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string, broadCastChann
 				fmt.Println("Error occured attempting to marshal notification data")
 				continue
 			}
-			broadCastChannel <- data
+			ym.broadcast <- data
 		}
 	}
 }
@@ -125,29 +126,33 @@ func (ym *YeelightManager) UpdateLightRecord(y *types.Yeelight, params types.Not
 	}
 }
 
-func (ym *YeelightManager) addLight(light *types.Yeelight) {
+func (ym *YeelightManager) AddLight(light *types.Yeelight) bool {
 	lightsMutex.Lock()
-	ym.lights[light.Id] = light
-	lightsMutex.Unlock()
+	defer lightsMutex.Unlock()
+	if _, ok := ym.lights[light.Id]; !ok {
+		ym.lights[light.Id] = light
+		return ok
+	}
+	return true
 }
 
 func (ym *YeelightManager) getLight(id string) (*types.Yeelight, bool) {
 	lightsMutex.Lock()
+	defer lightsMutex.Unlock()
 	light, exists := ym.lights[id]
-	lightsMutex.Unlock()
 	return light, exists
 }
 
 func (ym *YeelightManager) addLightConn(id string, conn net.Conn) {
 	lightConnsMutex.Lock()
+	defer lightConnsMutex.Unlock()
 	ym.lightConns[id] = conn
-	lightConnsMutex.Unlock()
 }
 
 func (ym *YeelightManager) getLightConn(id string) (net.Conn, bool) {
 	lightConnsMutex.Lock()
+	defer lightConnsMutex.Unlock()
 	conn, exists := ym.lightConns[id]
-	lightConnsMutex.Unlock()
 	return conn, exists
 }
 

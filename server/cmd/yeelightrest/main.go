@@ -11,8 +11,8 @@ import (
 func main() {
 	broadcastChannel := make(chan []byte)
 	discoverService := discovery.NewDiscoveryService()
-	lightManager := management.NewYeelightManager()
-	go lightManager.Start(discoverService.Start(), broadcastChannel)
+	lightManager := management.NewYeelightManager(broadcastChannel)
+	go lightManager.Start(discoverService.Start())
 
 	managementRest := restlayer.NewLightManagementRest(lightManager, broadcastChannel)
 	route := gin.Default()

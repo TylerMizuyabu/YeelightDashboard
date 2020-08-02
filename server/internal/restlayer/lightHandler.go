@@ -29,6 +29,23 @@ func (lh *LightHandler) RegisterEndpoints(g *gin.Engine) {
 	g.PUT("/lights/rgb", lh.SetRgb)
 	g.PUT("/lights/hsv", lh.SetHsv)
 	g.PUT("/lights/temperature", lh.SetTemperature)
+	g.POST("/lights", lh.AddLight)
+}
+
+func (lh *LightHandler) AddLight(c *gin.Context) {
+	req := new(requests.AddLightRequest)
+	if err := c.Bind(&req); err != nil {
+		fmt.Println("Bad request ", err)
+		c.String(400, "Bad request")
+	}
+	ids := make([]string, 0)
+	for _, addr := range req.LightAddrs {
+		light := types.NewYeelight(addr)
+		lh.lm.AddLight(light)
+		go lh.lm.MonitorLight(addr, light.Id)
+		ids = append(ids, light.Id)
+	}
+	c.JSON(200, ids)
 }
 
 func (lh *LightHandler) SetPower(c *gin.Context) {

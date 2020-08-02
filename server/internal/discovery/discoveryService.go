@@ -37,8 +37,8 @@ func (ds *DiscoveryService) Start() chan *types.Yeelight {
 		panic(err)
 	}
 	socket := packetConn.(*net.UDPConn)
-	go ds.sendDiscoverCommand(socket, udpAddr)
 	go ds.readDiscoveryAdvertisements(socket, c)
+	go ds.sendDiscoverCommand(socket, udpAddr)
 	return c
 }
 
@@ -51,10 +51,10 @@ func (ds *DiscoveryService) sendDiscoverCommand(socket *net.UDPConn, udpAddr *ne
 
 		if _, err := socket.WriteToUDP([]byte(discoverCommand), udpAddr); err != nil {
 			fmt.Println("Error attempting to send discovery request")
-			ds.handeFailures(discoverRequestInterval, maxDiscoveryRequestInterval)
+			ds.failures++
 			continue
 		}
-		ds.failures = 0
+		ds.sleep(discoverRequestInterval, maxDiscoveryRequestInterval)
 	}
 }
 
@@ -63,13 +63,16 @@ func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c c
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
-			ds.handeFailures(pollingInterval, maxPollingInterval)
+			ds.failures++
+			// fmt.Println("failed read", err)
+			ds.sleep(pollingInterval, maxPollingInterval)
 			continue
 		} else if size > 0 {
 			y, err := types.NewYeelightFromDiscoveryResponse(string(rsBuf[0:size]))
 			if err != nil {
+				ds.failures++
 				fmt.Println("Error occurred attempting to decode response")
-				ds.handeFailures( pollingInterval, maxPollingInterval)
+				ds.sleep( pollingInterval, maxPollingInterval)
 				continue
 			}
 			c <- y
@@ -78,8 +81,7 @@ func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c c
 	}
 }
 
-func (ds *DiscoveryService) handeFailures(interval time.Duration, maxDuration time.Duration) {
-	ds.failures++
+func (ds *DiscoveryService) sleep(interval time.Duration, maxDuration time.Duration) {
 	sleepDuration := interval * time.Duration(ds.failures)
 	if sleepDuration < maxDuration {
 		time.Sleep(sleepDuration)
