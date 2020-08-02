@@ -51,9 +51,9 @@ func (ds *DiscoveryService) sendDiscoverCommand(socket *net.UDPConn, udpAddr *ne
 
 		if _, err := socket.WriteToUDP([]byte(discoverCommand), udpAddr); err != nil {
 			fmt.Println("Error attempting to send discovery request")
-			continue
 		}
 		ds.failures = 0
+		fmt.Println(discoverCommand)
 		ds.sleep(discoverRequestInterval, maxDiscoveryRequestInterval)
 	}
 }
