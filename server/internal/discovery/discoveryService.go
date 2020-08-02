@@ -38,7 +38,7 @@ func (ds *DiscoveryService) Start() chan *types.Yeelight {
 	}
 	socket := packetConn.(*net.UDPConn)
 	go ds.sendDiscoverCommand(socket, udpAddr)
-	go ds.readDiscoveryAdvertisements(socket)
+	go ds.readDiscoveryAdvertisements(socket, c)
 	return c
 }
 
@@ -58,7 +58,7 @@ func (ds *DiscoveryService) sendDiscoverCommand(socket *net.UDPConn, udpAddr *ne
 	}
 }
 
-func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn) {
+func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c chan *types.Yeelight) {
 	for {
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
