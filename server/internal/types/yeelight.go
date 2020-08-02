@@ -35,10 +35,10 @@ const (
 	BsLamp             = "bslamp"
 )
 
-func NewYeelight(addr string) (*Yeelight) {
-	return &Yeelight {
+func NewYeelight(addr string) *Yeelight {
+	return &Yeelight{
 		addr: addr,
-		Id: uuid.New().String(),
+		Id:   uuid.New().String(),
 	}
 }
 

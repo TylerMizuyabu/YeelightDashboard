@@ -18,14 +18,14 @@ var lightConnsMutex = &sync.Mutex{}
 type YeelightManager struct {
 	lights     map[string]*types.Yeelight
 	lightConns map[string]net.Conn
-	broadcast chan []byte
+	broadcast  chan []byte
 }
 
-func NewYeelightManager(broadcast chan[]byte) *YeelightManager {
+func NewYeelightManager(broadcast chan []byte) *YeelightManager {
 	return &YeelightManager{
 		lights:     make(map[string]*types.Yeelight, 0),
 		lightConns: make(map[string]net.Conn, 0),
-		broadcast: broadcast,
+		broadcast:  broadcast,
 	}
 }
 
@@ -37,7 +37,7 @@ func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
 	}
 }
 
-func (ym *YeelightManager) MonitorLight(ipAddr string, id string, ) {
+func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 	conn, err := net.DialTimeout("tcp", ipAddr, time.Second*3)
 	if err != nil {
 		panic(err)
@@ -51,12 +51,12 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string, ) {
 			fmt.Println("Error: ", err.Error())
 			continue
 		}
-		var message interface{}
-		err = json.Unmarshal([]byte(data), &message)
+		unpacker := new(types.LightMessageUnpacker)
+		err = json.Unmarshal([]byte(data), &unpacker)
 		if err != nil {
 			fmt.Println("Error unmarshaling data", err.Error())
 		}
-		switch result := message.(type) {
+		switch result := unpacker.Data.(type) {
 		case types.CommandSuccessResponse:
 			fmt.Println("Command success: ", result)
 		case types.CommandErrorResponse:
