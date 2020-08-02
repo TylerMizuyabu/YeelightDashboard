@@ -51,10 +51,10 @@ func (ds *DiscoveryService) sendDiscoverCommand(socket *net.UDPConn, udpAddr *ne
 
 		if _, err := socket.WriteToUDP([]byte(discoverCommand), udpAddr); err != nil {
 			fmt.Println("Error attempting to send discovery request")
-			ds.handleFailure(discoverRequestInterval, maxDiscoveryRequestInterval)
 			continue
 		}
 		ds.failures = 0
+		ds.sleep(discoverRequestInterval, maxDiscoveryRequestInterval)
 	}
 }
 
@@ -63,13 +63,13 @@ func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c c
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
-			ds.handleFailure(pollingInterval, maxPollingInterval)
+			ds.sleep(pollingInterval, maxPollingInterval)
 			continue
 		} else if size > 0 {
 			y, err := types.NewYeelightFromDiscoveryResponse(string(rsBuf[0:size]))
 			if err != nil {
 				fmt.Println("Error occurred attempting to decode response")
-				ds.handleFailure(pollingInterval, maxPollingInterval)
+				ds.sleep(pollingInterval, maxPollingInterval)
 				continue
 			}
 			c <- y
@@ -78,7 +78,7 @@ func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c c
 	}
 }
 
-func (ds *DiscoveryService) handleFailure(interval time.Duration, maxDuration time.Duration) {
+func (ds *DiscoveryService) sleep(interval time.Duration, maxDuration time.Duration) {
 	ds.failures++
 	sleepDuration := interval * time.Duration(ds.failures)
 	if sleepDuration < maxDuration {
