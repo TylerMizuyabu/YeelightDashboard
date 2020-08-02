@@ -19,6 +19,7 @@ func NewLightManagementRest(lm *management.YeelightManager, broadcastChannel cha
 }
 
 func (r *LightManagementRest) Run(g *gin.Engine, addr string) {
+	go r.wsHub.Run()
 	r.lightHandler.RegisterEndpoints(g)
 	g.GET("/ws", func(c *gin.Context) {
 		serveWs(r.wsHub, c.Writer, c.Request)

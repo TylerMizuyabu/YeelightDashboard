@@ -25,7 +25,7 @@ func newHub(broadcast chan []byte) *Hub {
 	}
 }
 
-func (h *Hub) run() {
+func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:

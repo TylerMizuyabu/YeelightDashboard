@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 	"yeelight-server/internal/types"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 var lightsMutex = &sync.Mutex{}
@@ -45,30 +47,36 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 	defer conn.Close()
 	ym.addLightConn(id, conn)
 	r := bufio.NewReader(conn)
+
 	for {
 		data, err := r.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error: ", err.Error())
 			continue
 		}
-		unpacker := new(types.LightMessageUnpacker)
-		err = json.Unmarshal([]byte(data), &unpacker)
+		message := make(map[string]interface{}, 0)
+		err = json.Unmarshal([]byte(data), &message)
 		if err != nil {
 			fmt.Println("Error unmarshaling data", err.Error())
 		}
-		switch result := unpacker.Data.(type) {
-		case types.CommandSuccessResponse:
-			fmt.Println("Command success: ", result)
-		case types.CommandErrorResponse:
-			fmt.Println("Command error: ", result.Error.Message)
-		case types.NotificationResponse:
-			ym.UpdateLightRecord(ym.lights[id], result.Params)
-			data, err := json.Marshal(result)
-			if err != nil {
-				fmt.Println("Error occured attempting to marshal notification data")
+		if _, exists := message["result"]; exists {
+			fmt.Println("Command success: ", data)
+		} else if _, exists := message["error"]; exists {
+			fmt.Println("Command error: ", data)
+		} else {
+			var notification types.NotificationResponse
+			if err := mapstructure.Decode(message, &notification); err != nil {
+				fmt.Println("Error occurred attempting to convert message into NotificationResponse struct", err)
 				continue
 			}
-			ym.broadcast <- data
+			ym.UpdateLightRecord(ym.lights[id], notification.Params)
+			message["lightId"] = id
+			messageStr, err := json.Marshal(message)
+			if err != nil {
+				fmt.Println("Error converting notification message to string", err)
+				continue
+			}
+			ym.broadcast <- messageStr
 		}
 	}
 }

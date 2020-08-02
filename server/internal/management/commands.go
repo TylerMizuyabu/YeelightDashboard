@@ -10,6 +10,8 @@ var maxRgb int = 16777215
 var minRgb int = 0
 var maxHue int = 359
 var minHue int = 0
+var maxSat int = 100
+var minSat int = 0
 var minTemp int = 1700
 var maxTemp int = 6500
 var minBrightness int = 1
@@ -28,7 +30,7 @@ func NewSetRgbCommand(rgb int, smooth bool, duration int) *types.Command {
 }
 
 func NewSetHsvCommand(hue int, sat int, smooth bool, duration int) *types.Command {
-	return types.NewCommand(0, "set_hsv", []interface{}{withinRange(hue, &minHue, &maxHue), sat, smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
+	return types.NewCommand(0, "set_hsv", []interface{}{withinRange(hue, &minHue, &maxHue), withinRange(sat, &minSat, &maxSat), smoothOrSudden(smooth), withinRange(duration, &minDuration, nil)})
 }
 
 func NewSetBrightnessCommand(brightness int, smooth bool, duration int) *types.Command {
