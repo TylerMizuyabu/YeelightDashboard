@@ -16,13 +16,10 @@ var discoverRequestInterval = time.Minute
 var maxDiscoveryRequestInterval = time.Hour
 
 type DiscoveryService struct {
-	failures int
 }
 
 func NewDiscoveryService() *DiscoveryService {
-	return &DiscoveryService{
-		failures: 0,
-	}
+	return &DiscoveryService{}
 }
 
 func (ds *DiscoveryService) Start() chan *types.Yeelight {
@@ -44,6 +41,7 @@ func (ds *DiscoveryService) Start() chan *types.Yeelight {
 
 func (ds *DiscoveryService) sendDiscoverCommand(socket *net.UDPConn, udpAddr *net.UDPAddr) {
 	socket.SetReadDeadline(time.Now().Add(timeout))
+	failures := 0
 	for {
 		// According to the yeelight spec there should be an advertisement request sent out
 		// every hour, or when a new light joins the network. I don't know how much I believe it
@@ -51,39 +49,41 @@ func (ds *DiscoveryService) sendDiscoverCommand(socket *net.UDPConn, udpAddr *ne
 
 		if _, err := socket.WriteToUDP([]byte(discoverCommand), udpAddr); err != nil {
 			fmt.Println("Error attempting to send discovery request")
+			failures = ds.handeFailures(failures, discoverRequestInterval, maxDiscoveryRequestInterval)
+			continue
 		}
-		ds.failures = 0
-		fmt.Println(discoverCommand)
-		ds.sleep(discoverRequestInterval, maxDiscoveryRequestInterval)
+		failures = 0
 	}
 }
 
 func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c chan *types.Yeelight) {
+	failures := 0
 	for {
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
-			ds.sleep(pollingInterval, maxPollingInterval)
+			ds.handeFailures(failures, pollingInterval, maxPollingInterval)
 			continue
 		} else if size > 0 {
 			y, err := types.NewYeelightFromDiscoveryResponse(string(rsBuf[0:size]))
 			if err != nil {
 				fmt.Println("Error occurred attempting to decode response")
-				ds.sleep(pollingInterval, maxPollingInterval)
+				ds.handeFailures(failures, pollingInterval, maxPollingInterval)
 				continue
 			}
 			c <- y
 		}
-		ds.failures = 0
+		failures = 0
 	}
 }
 
-func (ds *DiscoveryService) sleep(interval time.Duration, maxDuration time.Duration) {
-	ds.failures++
-	sleepDuration := interval * time.Duration(ds.failures)
+func (ds *DiscoveryService) handeFailures(failures int, interval time.Duration, maxDuration time.Duration) int {
+	failures++
+	sleepDuration := interval * time.Duration(failures)
 	if sleepDuration < maxDuration {
 		time.Sleep(sleepDuration)
 	} else {
 		time.Sleep(maxDuration)
 	}
+	return failures
 }
