@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 )
 
 var ErrorInvalidResponseMessage error = errors.New("Invalid Response Message")
@@ -33,6 +34,13 @@ const (
 	Ceiling            = "ceiling"
 	BsLamp             = "bslamp"
 )
+
+func NewYeelight(addr string) (*Yeelight) {
+	return &Yeelight {
+		addr: addr,
+		Id: uuid.New().String(),
+	}
+}
 
 func NewYeelightFromDiscoveryResponse(responseMessage string) (*Yeelight, error) {
 	parser := NewParser(responseMessage)
