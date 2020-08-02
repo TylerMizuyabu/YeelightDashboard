@@ -10,10 +10,8 @@ import (
 var discoverCommand = "M-SEARCH * HTTP/1.1\r\n HOST:239.255.255.250:1982\r\n MAN:\"ssdp:discover\"\r\n ST:wifi_bulb\r\n"
 var address = "239.255.255.250:1982"
 var timeout = time.Second * 3
-var pollingInterval = time.Second
-var maxPollingInterval = time.Minute
-var discoverRequestInterval = time.Minute
-var maxDiscoveryRequestInterval = time.Hour
+var pollingInterval = time.Minute
+var maxPollingInterval = time.Hour
 
 type DiscoveryService struct {
 	failures int
@@ -51,7 +49,7 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 		if ds.failures > 0 {
 			if _, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr); err != nil {
 				fmt.Println("Error attempting to send discovery request")
-				ds.handeFailures(discoverRequestInterval, maxDiscoveryRequestInterval)
+				ds.handeFailures()
 				continue
 			}
 		}
@@ -59,13 +57,13 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
-			ds.handeFailures(pollingInterval, maxPollingInterval)
+			ds.handeFailures()
 			continue
 		} else if size > 0 {
 			y, err := types.NewYeelightFromDiscoveryResponse(string(rsBuf[0:size]))
 			if err != nil {
 				fmt.Println("Error occurred attempting to decode response")
-				ds.handeFailures(pollingInterval, maxPollingInterval)
+				ds.handeFailures()
 				continue
 			}
 			fmt.Println(y)
@@ -76,12 +74,12 @@ func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 	}
 }
 
-func (ds *DiscoveryService) handeFailures(interval time.Duration, maxDuration time.Duration) {
+func (ds *DiscoveryService) handeFailures() {
 	ds.failures++
-	sleepDuration := interval * time.Duration(ds.failures)
-	if sleepDuration < maxDuration {
+	sleepDuration := pollingInterval * time.Duration(ds.failures)
+	if sleepDuration < maxPollingInterval {
 		time.Sleep(sleepDuration)
 	} else {
-		time.Sleep(maxDuration)
+		time.Sleep(maxPollingInterval)
 	}
 }
