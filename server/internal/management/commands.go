@@ -2,7 +2,7 @@ package management
 
 import (
 	"fmt"
-	"yeelight-control-server/internal/types"
+	"yeelight-server/internal/types"
 )
 
 var minDuration int = 30
@@ -73,7 +73,7 @@ func onOrOff(isOn bool) string {
 func withinRange(value int, min *int, max *int) int {
 	if min != nil && value < *min {
 		return *min
-	} else if  max != nil && value > *max {
+	} else if max != nil && value > *max {
 		return *max
 	} else {
 		return value

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 	"time"
-	"yeelight-control-server/internal/types"
+	"yeelight-server/internal/types"
 )
 
 var discoverCommand = "M-SEARCH * HTTP/1.1\r\n HOST:239.255.255.250:1982\r\n MAN:\"ssdp:discover\"\r\n ST:wifi_bulb\r\n"

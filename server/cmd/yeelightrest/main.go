@@ -1,9 +1,9 @@
 package main
 
 import (
-	"yeelight-control-server/internal/discovery"
-	"yeelight-control-server/internal/management"
-	"yeelight-control-server/internal/restlayer"
+	"yeelight-server/internal/discovery"
+	"yeelight-server/internal/management"
+	"yeelight-server/internal/restlayer"
 
 	"github.com/gin-gonic/gin"
 )

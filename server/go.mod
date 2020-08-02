@@ -1,4 +1,4 @@
-module yeelight-control-server
+module yeelight-server
 
 go 1.14
 

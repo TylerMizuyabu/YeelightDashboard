@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"yeelight-control-server/internal/types"
+	"yeelight-server/internal/types"
 )
 
 var lightsMutex = &sync.Mutex{}

@@ -1,6 +1,6 @@
 package requests
 
-import "yeelight-control-server/internal/types"
+import "yeelight-server/internal/types"
 
 type SetPowerRequest struct {
 	*BaseTransitionRequest

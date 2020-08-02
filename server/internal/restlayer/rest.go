@@ -1,7 +1,7 @@
 package restlayer
 
 import (
-	"yeelight-control-server/internal/management"
+	"yeelight-server/internal/management"
 
 	"github.com/gin-gonic/gin"
 )

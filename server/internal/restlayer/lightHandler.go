@@ -2,9 +2,9 @@ package restlayer
 
 import (
 	"fmt"
-	"yeelight-control-server/internal/management"
-	"yeelight-control-server/internal/types"
-	"yeelight-control-server/internal/types/requests"
+	"yeelight-server/internal/management"
+	"yeelight-server/internal/types"
+	"yeelight-server/internal/types/requests"
 
 	"errors"
 
