@@ -1,7 +1,7 @@
 package types
 
 type Command struct {
-	Id     int        `json:"id"`
+	Id     int           `json:"id"`
 	Method string        `json:"method"`
 	Params []interface{} `json:"params"`
 }
