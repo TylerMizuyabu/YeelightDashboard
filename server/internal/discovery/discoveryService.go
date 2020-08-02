@@ -27,6 +27,11 @@ func NewDiscoveryService() *DiscoveryService {
 
 func (ds *DiscoveryService) Start() chan *types.Yeelight {
 	c := make(chan *types.Yeelight)
+	go ds.discover(c)
+	return c
+}
+
+func (ds *DiscoveryService) discover(c chan *types.Yeelight) {
 	udpAddr, err := net.ResolveUDPAddr("udp4", address)
 	if err != nil {
 		// Think of a better way to handle these errors
@@ -37,29 +42,20 @@ func (ds *DiscoveryService) Start() chan *types.Yeelight {
 		panic(err)
 	}
 	socket := packetConn.(*net.UDPConn)
-	go ds.sendDiscoverCommand(socket, udpAddr)
-	go ds.readDiscoveryAdvertisements(socket, c)
-	return c
-}
-
-func (ds *DiscoveryService) sendDiscoverCommand(socket *net.UDPConn, udpAddr *net.UDPAddr) {
 	socket.SetReadDeadline(time.Now().Add(timeout))
+	// According to the yeelight spec there should be an advertisement request sent out
+	// every hour, or when a new light joins the network. I don't know how much I believe it
+	// though
+	socket.WriteToUDP([]byte(discoverCommand), udpAddr)
 	for {
-		// According to the yeelight spec there should be an advertisement request sent out
-		// every hour, or when a new light joins the network. I don't know how much I believe it
-		// though
-
-		if _, err := socket.WriteToUDP([]byte(discoverCommand), udpAddr); err != nil {
-			fmt.Println("Error attempting to send discovery request")
-			ds.handeFailures(discoverRequestInterval, maxDiscoveryRequestInterval)
-			continue
+		if ds.failures > 0 {
+			if _, err = socket.WriteToUDP([]byte(discoverCommand), udpAddr); err != nil {
+				fmt.Println("Error attempting to send discovery request")
+				ds.handeFailures(discoverRequestInterval, maxDiscoveryRequestInterval)
+				continue
+			}
 		}
-		ds.failures = 0
-	}
-}
 
-func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c chan *types.Yeelight) {
-	for {
 		rsBuf := make([]byte, 1024)
 		size, _, err := socket.ReadFromUDP(rsBuf)
 		if err != nil {
@@ -69,11 +65,13 @@ func (ds *DiscoveryService) readDiscoveryAdvertisements(socket *net.UDPConn, c c
 			y, err := types.NewYeelightFromDiscoveryResponse(string(rsBuf[0:size]))
 			if err != nil {
 				fmt.Println("Error occurred attempting to decode response")
-				ds.handeFailures( pollingInterval, maxPollingInterval)
+				ds.handeFailures(pollingInterval, maxPollingInterval)
 				continue
 			}
+			fmt.Println(y)
 			c <- y
 		}
+
 		ds.failures = 0
 	}
 }
