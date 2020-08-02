@@ -27,16 +27,16 @@ func NewYeelightManager() *YeelightManager {
 	}
 }
 
-func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
+func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight, broadCastChannel chan []byte) {
 	for light := range discoveredLights {
 		if _, ok := ym.getLight(light.Id); !ok {
 			ym.addLight(light)
-			go ym.MonitorLight(light.GetAddress(), light.Id)
+			go ym.MonitorLight(light.GetAddress(), light.Id, broadCastChannel)
 		}
 	}
 }
 
-func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
+func (ym *YeelightManager) MonitorLight(ipAddr string, id string, broadCastChannel chan []byte) {
 	conn, err := net.DialTimeout("tcp", ipAddr, time.Second*3)
 	if err != nil {
 		panic(err)
@@ -62,6 +62,12 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 			fmt.Println("Command error: ", result.Error.Message)
 		case types.NotificationResponse:
 			ym.UpdateLightRecord(ym.lights[id], result.Params)
+			data, err := json.Marshal(result)
+			if err != nil {
+				fmt.Println("Error occured attempting to marshal notification data")
+				continue
+			}
+			broadCastChannel <- data
 		}
 	}
 }

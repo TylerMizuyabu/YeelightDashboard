@@ -16,9 +16,9 @@ type Hub struct {
 	unregister chan *Client
 }
 
-func newHub() *Hub {
+func newHub(broadcast chan []byte) *Hub {
 	return &Hub{
-		broadcast:  make(chan []byte),
+		broadcast:  broadcast,
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),

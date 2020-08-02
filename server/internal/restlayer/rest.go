@@ -7,16 +7,21 @@ import (
 )
 
 type LightManagementRest struct {
+	wsHub        *Hub
 	lightHandler *LightHandler
 }
 
-func NewLightManagementRest(lm *management.YeelightManager) *LightManagementRest {
+func NewLightManagementRest(lm *management.YeelightManager, broadcastChannel chan []byte) *LightManagementRest {
 	return &LightManagementRest{
+		wsHub:        newHub(broadcastChannel),
 		lightHandler: NewLightHandler(lm),
 	}
 }
 
 func (r *LightManagementRest) Run(g *gin.Engine, addr string) {
 	r.lightHandler.RegisterEndpoints(g)
+	g.GET("/ws", func(c *gin.Context) {
+		serveWs(r.wsHub, c.Writer, c.Request)
+	})
 	g.Run(addr)
 }
