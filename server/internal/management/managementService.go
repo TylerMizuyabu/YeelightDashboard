@@ -59,6 +59,7 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 		if err != nil {
 			fmt.Println("Error unmarshaling data", err.Error())
 		}
+		//Look into a better way to determine type dynamically
 		if _, exists := message["result"]; exists {
 			fmt.Println("Command success: ", data)
 		} else if _, exists := message["error"]; exists {
