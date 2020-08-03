@@ -8,7 +8,7 @@ type NotificationResponse struct {
 type NotificationResponseParams struct {
 	Power          *string    `json:"power"`
 	Brightness     *int       `json:"bright" mapstructure:"bright"`
-	Mode           *LightMode `json:"color_mode"`
+	Mode           *LightMode `json:"color_mode" mapstructure:"color_mode"`
 	Ct             *int       `json:"ct"`
 	Rgb            *int       `json:"rgb"`
 	Hue            *int       `json:"hue"`

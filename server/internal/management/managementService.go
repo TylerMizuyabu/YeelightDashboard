@@ -16,11 +16,20 @@ import (
 
 var lightsMutex = &sync.Mutex{}
 var lightConnsMutex = &sync.Mutex{}
+var requestIdMutex = &sync.Mutex{}
+
+var lightIdField = "lightId"
+var getStatusFields = []string{"power", "bright", "ct", "rgb", "hue", "sat", "color_mode", "flowing", "flow_params", "name"}
 
 type YeelightManager struct {
+	// the maps and uint should probably be their own custom types that manage their own mutexes
+	// the data stored in them would then be private and only exposed via functions that make use of the mutex
+	// at the moment if you aren't careful you can still circumvent the mutex. Which kind of defeats the purpose of
+	// having them.
 	lights     map[string]*types.Yeelight
 	lightConns map[string]net.Conn
 	broadcast  chan []byte
+	requestId  uint
 }
 
 func NewYeelightManager(broadcast chan []byte) *YeelightManager {
@@ -28,6 +37,7 @@ func NewYeelightManager(broadcast chan []byte) *YeelightManager {
 		lights:     make(map[string]*types.Yeelight, 0),
 		lightConns: make(map[string]net.Conn, 0),
 		broadcast:  broadcast,
+		requestId:  0,
 	}
 }
 
@@ -38,6 +48,8 @@ func (ym *YeelightManager) Start(discoveredLights chan *types.Yeelight) {
 		}
 	}
 }
+
+//This method can be broken up into simpler smaller parts
 
 func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 	conn, err := net.DialTimeout("tcp", ipAddr, time.Second*3)
@@ -61,7 +73,32 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 		}
 		//Look into a better way to determine type dynamically
 		if _, exists := message["result"]; exists {
-			fmt.Println("Command success: ", data)
+			var successResponse types.CommandSuccessResponse
+			if err := mapstructure.Decode(message, &successResponse); err != nil {
+				fmt.Println("Error occurred attempting to convert message into CommandSuccessResponse struct", err)
+				continue
+			}
+			if len(successResponse.Result) > 1 {
+				// its a get_prop command.
+				var results map[string]interface{}
+				for i, field := range getStatusFields {
+					results[field] = successResponse.Result[i]
+				}
+				var params types.NotificationResponseParams
+				if err := mapstructure.Decode(results, &params); err != nil {
+					fmt.Println("Error occurred attempting to convert get_props result into NotificationResponseParams struct", err)
+				} else {
+					ym.UpdateLight(id, params)
+				}
+				message[lightIdField] = id
+				message["params"] = params
+				messageStr, err := json.Marshal(message)
+				if err != nil {
+					fmt.Println("Error converting notification message to string", err)
+					continue
+				}
+				ym.broadcast <- messageStr
+			}
 		} else if _, exists := message["error"]; exists {
 			fmt.Println("Command error: ", data)
 		} else {
@@ -70,8 +107,8 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 				fmt.Println("Error occurred attempting to convert message into NotificationResponse struct", err)
 				continue
 			}
-			ym.UpdateLightRecord(ym.lights[id], notification.Params)
-			message["lightId"] = id
+			ym.UpdateLight(id, notification.Params)
+			message[lightIdField] = id
 			messageStr, err := json.Marshal(message)
 			if err != nil {
 				fmt.Println("Error converting notification message to string", err)
@@ -82,11 +119,16 @@ func (ym *YeelightManager) MonitorLight(ipAddr string, id string) {
 	}
 }
 
+func (ym *YeelightManager) FetchLightStatus(lightIds []string) string {
+	var command = NewGetPropsCommand(getStatusFields...)
+	return ym.RunCommand(command, lightIds)
+}
+
 func (ym *YeelightManager) RunCommand(command *types.Command, lightIds []string) string {
-	id := 1
-	command.SetId(id)
-	for _, id := range lightIds {
-		if conn, has := ym.getLightConn(id); has {
+	requestId := ym.getRequestId()
+	command.SetId(requestId)
+	for _, lightId := range lightIds {
+		if conn, has := ym.getLightConn(lightId); has {
 			if payload, err := json.Marshal(*command); err != nil {
 				fmt.Println("Error occurred attempting to parse command json ", command)
 			} else {
@@ -97,12 +139,15 @@ func (ym *YeelightManager) RunCommand(command *types.Command, lightIds []string)
 		}
 	}
 
-	return fmt.Sprintf("%d", id)
+	return fmt.Sprintf("%d", requestId)
 }
 
 // All of the code bellow should be refactored at some point
 
-func (ym *YeelightManager) UpdateLightRecord(y *types.Yeelight, params types.NotificationResponseParams) {
+func (ym *YeelightManager) UpdateLight(id string, params types.NotificationResponseParams) {
+	lightsMutex.Lock()
+	defer lightsMutex.Unlock()
+	y := ym.lights[id]
 	// Uuuuuh I'm not sure how to do this better but will have to look into it -_-
 	ifIntNotNilSetField(&y.Brightness, params.Brightness)
 	ifIntNotNilSetField(&y.Ct, params.Ct)
@@ -163,6 +208,14 @@ func (ym *YeelightManager) getLightConn(id string) (net.Conn, bool) {
 	defer lightConnsMutex.Unlock()
 	conn, exists := ym.lightConns[id]
 	return conn, exists
+}
+
+func (ym *YeelightManager) getRequestId() uint {
+	requestIdMutex.Lock()
+	defer requestIdMutex.Unlock()
+	var returnValue = ym.requestId
+	ym.requestId++
+	return returnValue
 }
 
 // I want generics T_T

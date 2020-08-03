@@ -1,12 +1,12 @@
 package types
 
 type Command struct {
-	Id     int           `json:"id"`
+	Id     uint          `json:"id"`
 	Method string        `json:"method"`
 	Params []interface{} `json:"params"`
 }
 
-func NewCommand(id int, method string, params []interface{}) *Command {
+func NewCommand(id uint, method string, params []interface{}) *Command {
 	return &Command{
 		Id:     id,
 		Method: method,
@@ -14,6 +14,6 @@ func NewCommand(id int, method string, params []interface{}) *Command {
 	}
 }
 
-func (c *Command) SetId(id int) {
+func (c *Command) SetId(id uint) {
 	c.Id = id
 }

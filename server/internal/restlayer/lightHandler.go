@@ -45,6 +45,8 @@ func (lh *LightHandler) AddLight(c *gin.Context) {
 		go lh.lm.MonitorLight(addr, light.Id)
 		ids = append(ids, light.Id)
 	}
+	// So this doesn't work. Because it attempts to do this before a TCP connection can be established
+	lh.lm.FetchLightStatus(ids)
 	c.JSON(200, ids)
 }
 
