@@ -183,6 +183,7 @@ func (ym *YeelightManager) UpdateLight(id string, params types.NotificationRespo
 func (ym *YeelightManager) AddLight(light *types.Yeelight) bool {
 	lightsMutex.Lock()
 	defer lightsMutex.Unlock()
+	fmt.Println("Adding light ", light)
 	if _, ok := ym.lights[light.Id]; !ok {
 		ym.lights[light.Id] = light
 		return ok
