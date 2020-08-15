@@ -1,0 +1,12 @@
+@import '../theme.scss';
+
+.container {
+  width:100vw;
+  height: 100vh;
+
+  .side-menu {
+    background-color: mat-color($primary);
+    width: 30vw;
+    max-width: 300px;
+  }
+}

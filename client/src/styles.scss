@@ -1,1 +1,39 @@
 /* You can add global styles to this file, and also import other style files */
+.row, .column {
+  display:flex !important;
+
+  & .center {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .grow-1 {
+    flex-grow: 1;
+  }
+}
+
+.row {
+  flex-direction: row;
+
+  &.center-vt {
+    align-items: center;
+  }
+
+  &.center-hr {
+    justify-content: center;
+  }
+}
+
+.column {
+  flex-direction: column;
+
+  &.center-vt {
+    justify-content: center;
+  }
+
+  &.center-hr {
+    align-items: center;
+  }
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
