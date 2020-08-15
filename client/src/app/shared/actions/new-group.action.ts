@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store'
 
 export const newGroup = createAction(
-  '[Groups Page] newGroup',
+  '[Groups] New Group',
   props<{groupName: string}>()
 )

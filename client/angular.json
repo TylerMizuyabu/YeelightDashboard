@@ -121,6 +121,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "client"
+    }
+  },
+  "defaultProject": "client",
+  "cli": {
+    "defaultCollection": "@ngneat/spectator"
+  }
 }
