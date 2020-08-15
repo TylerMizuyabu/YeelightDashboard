@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MenuItem } from './shared/components/side-menu/menu-item';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'client';
+
+  menuItems: MenuItem[] = [{
+    icon: 'devices',
+    text: 'Lights',
+  }]
 }

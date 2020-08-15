@@ -1,12 +1,15 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LightListComponent } from './components/light-list/light-list.component';
+import {MaterialModule} from '../material.module';
 
 
 
 @NgModule({
-  declarations: [],
+  declarations: [LightListComponent],
   imports: [
-    CommonModule
+    CommonModule,
+    MaterialModule
   ]
 })
 export class LightsModule { }

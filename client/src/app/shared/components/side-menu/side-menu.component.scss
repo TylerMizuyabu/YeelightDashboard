@@ -1,0 +1,14 @@
+@import '../../../../theme.scss';
+
+.tree {
+  background-color: transparent;
+  
+  > * {
+    color: mat-color($primary, default-contrast);
+  }
+
+  .tree-node a {
+    width: 100%;
+    font-size: 24px
+  }
+}

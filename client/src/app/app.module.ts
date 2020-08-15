@@ -7,6 +7,7 @@ import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers } from './shared/reducers';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MaterialModule} from './material.module';
+import {SharedModule} from './shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,7 @@ import {MaterialModule} from './material.module';
     BrowserModule,
     AppRoutingModule,
     MaterialModule,
+    SharedModule,
     StoreModule.forRoot(reducers, {
       metaReducers
     }),

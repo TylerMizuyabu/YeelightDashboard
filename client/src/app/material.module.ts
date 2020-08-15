@@ -1,13 +1,19 @@
-
-
-import {MatSidenavModule} from '@angular/material/sidenav'; 
+import { MatTreeModule } from '@angular/material/tree';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTableModule} from '@angular/material/table';
 import { NgModule } from '@angular/core';
 
 const modules = [
-  MatSidenavModule
+  MatSidenavModule,
+  MatTreeModule,
+  MatIconModule,
+  MatButtonModule,
+  MatTableModule
 ]
 
-@NgModule ({
+@NgModule({
   imports: [
     ...modules
   ],
@@ -15,4 +21,4 @@ const modules = [
     ...modules
   ]
 })
-export class MaterialModule{}
+export class MaterialModule { }
