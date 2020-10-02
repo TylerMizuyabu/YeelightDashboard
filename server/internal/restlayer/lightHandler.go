@@ -32,6 +32,11 @@ func (lh *LightHandler) RegisterEndpoints(g *gin.Engine) {
 	g.POST("/lights", lh.AddLight)
 }
 
+func (lh *LightHandler) GetLights(c *gin.Context) {
+	lights := lh.lm.GetLights()
+	c.JSON(200, lights)
+}
+
 func (lh *LightHandler) AddLight(c *gin.Context) {
 	req := new(requests.AddLightRequest)
 	if err := c.Bind(&req); err != nil {

@@ -191,6 +191,14 @@ func (ym *YeelightManager) AddLight(light *types.Yeelight) bool {
 	return true
 }
 
+func (ym *YeelightManager) GetLights() []*types.Yeelight {
+	lights := make([]*types.Yeelight, 0)
+	for _, light := range ym.lights {
+		lights = append(lights, light)
+	}
+	return lights
+}
+
 func (ym *YeelightManager) getLight(id string) (*types.Yeelight, bool) {
 	lightsMutex.Lock()
 	defer lightsMutex.Unlock()
